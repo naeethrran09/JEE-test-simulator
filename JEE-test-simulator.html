@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>JEE VR Exam Simulator</title>
+
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+    }
+
+    #instructions {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 10;
+        background: rgba(0,0,0,0.75);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="instructions">
+    <b>JEE VR EXAM</b><br>
+    PC: Mouse<br>
+    Quest 3S: Point controller and press trigger
+</div>
+
+<a-scene
+    background="color: #20252b"
+    renderer="antialias: true; colorManagement: true"
+    webxr="requiredFeatures: local-floor">
+
+    <!-- ================= LIGHT ================= -->
+
+    <a-entity light="type: ambient; intensity: 0.9"></a-entity>
+
+    <a-entity
+        light="type: directional; intensity: 1"
+        position="-3 5 4">
+    </a-entity>
+
+
+    <!-- ================= ROOM ================= -->
+
+    <a-plane
+        rotation="-90 0 0"
+        width="12"
+        height="12"
+        color="#555">
+    </a-plane>
+
+    <a-box
+        position="0 2.5 4"
+        width="12"
+        height="5"
+        depth="0.15"
+        color="#d5d5d5">
+    </a-box>
+
+
+    <!-- ================= DESK ================= -->
+
+    <a-box
+        position="0 1.05 -1"
+        width="3.5"
+        height="0.15"
+        depth="1.5"
+        color="#68472f">
+    </a-box>
+
+    <a-box
+        position="-1.5 0.5 -1"
+        width="0.12"
+        height="1"
+        depth="0.12"
+        color="#333">
+    </a-box>
+
+    <a-box
+        position="1.5 0.5 -1"
+        width="0.12"
+        height="1"
+        depth="0.12"
+        color="#333">
+    </a-box>
+
+
+    <!-- ================= CHAIR ================= -->
+
+    <a-box
+        position="0 0.65 -2"
+        width="1.2"
+        height="0.15"
+        depth="1"
+        color="#292d33">
+    </a-box>
+
+    <a-box
+        position="0 1.3 -2.45"
+        width="1.2"
+        height="1.3"
+        depth="0.12"
+        color="#292d33">
+    </a-box>
+
+
+<!-- ================= MONITOR ================= -->
+
+<a-box
+    id="monitor"
+    position="0 2.05 -1.05"
+    width="3.4"
+    height="1.9"
+    depth="0.18"
+    color="#111">
+</a-box>
+
+<!-- Monitor stand -->
+<a-box
+    position="0 1.45 -1.05"
+    width="0.15"
+    height="0.65"
+    depth="0.15"
+    color="#222">
+</a-box>
+
+<a-box
+    position="0 1.13 -1.05"
+    width="0.8"
+    height="0.08"
+    depth="0.35"
+    color="#222">
+</a-box>
+
+
+<!-- =================================================
+     JEE CBT INTERFACE
+
+     IMPORTANT:
+     The monitor center is Z=-1.05 and its front face
+     is approximately Z=-0.96.
+
+     The CBT screen is placed at Z=-0.92, so it is
+     CLEARLY in front of the monitor and cannot be
+     hidden by the monitor body.
+
+     The entire UI is kept inside the 3.15 x 1.65
+     visible screen area.
+================================================= -->
+
+<a-entity
+    id="examInterface"
+    position="0 2.05 -0.92">
+
+    <!-- Actual screen -->
+    <a-plane
+        width="3.15"
+        height="1.65"
+        color="#f5f5f5"
+        material="side: double">
+    </a-plane>
+
+    <!-- HEADER -->
+    <a-plane
+        position="0 0.695 0.02"
+        width="3.15"
+        height="0.24"
+        color="#263b52"
+        material="side: double">
+    </a-plane>
+
+    <a-text
+        value="JEE PRACTICE TEST"
+        position="-1.40 0.695 0.04"
+        width="2.0"
+        color="white">
+    </a-text>
+
+    <a-text
+        id="timer"
+        value="10:00"
+        position="1.35 0.695 0.04"
+        width="0.8"
+        color="white"
+        align="right">
+    </a-text>
+
+
+    <!-- QUESTION NUMBER -->
+    <a-text
+        id="questionNumber"
+        value="Question 1 / 2"
+        position="-1.40 0.49 0.04"
+        width="1.9"
+        color="#111">
+    </a-text>
+
+
+    <!-- QUESTION -->
+    <a-text
+        id="questionText"
+        value=""
+        position="-1.40 0.34 0.04"
+        width="2.65"
+        color="#111"
+        wrap-count="52">
+    </a-text>
+
+
+    <!-- OPTION A -->
+    <a-plane
+        id="optionA"
+        class="clickable"
+        position="0 -0.02 0.04"
+        width="2.75"
+        height="0.18"
+        color="#e8e8e8"
+        material="side: double">
+    </a-plane>
+
+    <a-text
+        id="optionAText"
+        value=""
+        position="-1.30 -0.02 0.05"
+        width="2.45"
+        color="#111">
+    </a-text>
+
+
+    <!-- OPTION B -->
+    <a-plane
+        id="optionB"
+        class="clickable"
+        position="0 -0.22 0.04"
+        width="2.75"
+        height="0.18"
+        color="#e8e8e8"
+        material="side: double">
+    </a-plane>
+
+    <a-text
+        id="optionBText"
+        value=""
+        position="-1.30 -0.22 0.05"
+        width="2.45"
+        color="#111">
+    </a-text>
+
+
+    <!-- OPTION C -->
+    <a-plane
+        id="optionC"
+        class="clickable"
+        position="0 -0.42 0.04"
+        width="2.75"
+        height="0.18"
+        color="#e8e8e8"
+        material="side: double">
+    </a-plane>
+
+    <a-text
+        id="optionCText"
+        value=""
+        position="-1.30 -0.42 0.05"
+        width="2.45"
+        color="#111">
+    </a-text>
+
+
+    <!-- OPTION D -->
+    <a-plane
+        id="optionD"
+        class="clickable"
+        position="0 -0.62 0.04"
+        width="2.75"
+        height="0.18"
+        color="#e8e8e8"
+        material="side: double">
+    </a-plane>
+
+    <a-text
+        id="optionDText"
+        value=""
+        position="-1.30 -0.62 0.05"
+        width="2.45"
+        color="#111">
+    </a-text>
+
+
+    <!-- NEXT QUESTION -->
+    <a-plane
+        id="nextButton"
+        class="clickable"
+        position="0 -0.77 0.04"
+        width="1.05"
+        height="0.18"
+        color="#1976d2"
+        material="side: double">
+    </a-plane>
+
+    <a-text
+        id="nextText"
+        value="NEXT QUESTION"
+        position="-0.50 -0.77 0.05"
+        width="0.95"
+        color="white"
+        align="center">
+    </a-text>
+
+</a-entity>
+
+
+<!-- ================= KEYBOARD ================= -->
+
+    <a-box
+        position="0 1.15 -0.25"
+        width="2"
+        height="0.08"
+        depth="0.65"
+        color="#222">
+    </a-box>
+
+
+    <!-- ================= MOUSE ================= -->
+
+    <a-sphere
+        position="1.1 1.16 -0.25"
+        radius="0.13"
+        color="#333">
+    </a-sphere>
+
+
+    <!-- =================================================
+         QUEST 3S CONTROLLERS
+    ================================================== -->
+
+    <a-entity
+        laser-controls="hand: left"
+        raycaster="objects: .clickable; far: 10"
+        line="color: #00ffff">
+    </a-entity>
+
+    <a-entity
+        laser-controls="hand: right"
+        raycaster="objects: .clickable; far: 10"
+        line="color: #00ffff">
+    </a-entity>
+
+
+    <!-- ================= CAMERA ================= -->
+
+    <a-entity position="0 1.65 0">
+
+        <a-camera
+            look-controls="enabled: true"
+            cursor="rayOrigin: mouse">
+        </a-camera>
+
+    </a-entity>
+
+</a-scene>
+
+
+<script>
+
+/* =====================================================
+   QUESTIONS
+===================================================== */
+
+const questions = [
+
+    {
+        question:
+        "A particle moves with constant velocity. Which statement is correct?",
+
+        options: [
+            "A. Its acceleration is zero",
+            "B. Its acceleration is constant but non-zero",
+            "C. Its velocity continuously increases",
+            "D. Its displacement is always zero"
+        ],
+
+        answer: 0
+    },
+
+    {
+        question:
+        "For any real value of θ, what is sin²θ + cos²θ?",
+
+        options: [
+            "A. 0",
+            "B. 1",
+            "C. 2",
+            "D. Depends on θ"
+        ],
+
+        answer: 1
+    }
+
+];
+
+
+/* =====================================================
+   EXAM STATE
+===================================================== */
+
+let currentQuestion = 0;
+
+let selectedAnswers = [
+    null,
+    null
+];
+
+
+/* 10 MINUTES */
+
+let timeRemaining = 10 * 60;
+
+let examFinished = false;
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const questionNumber =
+    document.querySelector("#questionNumber");
+
+const questionText =
+    document.querySelector("#questionText");
+
+const timer =
+    document.querySelector("#timer");
+
+
+const optionButtons = [
+
+    document.querySelector("#optionA"),
+    document.querySelector("#optionB"),
+    document.querySelector("#optionC"),
+    document.querySelector("#optionD")
+
+];
+
+
+const optionTexts = [
+
+    document.querySelector("#optionAText"),
+    document.querySelector("#optionBText"),
+    document.querySelector("#optionCText"),
+    document.querySelector("#optionDText")
+
+];
+
+
+/* =====================================================
+   DISPLAY QUESTION
+===================================================== */
+
+function displayQuestion() {
+
+    const q = questions[currentQuestion];
+
+
+    questionNumber.setAttribute(
+        "value",
+        `Question ${currentQuestion + 1} / ${questions.length}`
+    );
+
+
+    questionText.setAttribute(
+        "value",
+        q.question
+    );
+
+
+    for (let i = 0; i < 4; i++) {
+
+        optionTexts[i].setAttribute(
+            "value",
+            q.options[i]
+        );
+
+
+        /*
+         Highlight selected answer
+        */
+
+        if (
+            selectedAnswers[currentQuestion] === i
+        ) {
+
+            optionButtons[i].setAttribute(
+                "color",
+                "#64b5f6"
+            );
+
+        } else {
+
+            optionButtons[i].setAttribute(
+                "color",
+                "#e8e8e8"
+            );
+
+        }
+
+    }
+
+
+    if (
+        currentQuestion === questions.length - 1
+    ) {
+
+        document
+        .querySelector("#nextText")
+        .setAttribute(
+            "value",
+            "SUBMIT"
+        );
+
+    } else {
+
+        document
+        .querySelector("#nextText")
+        .setAttribute(
+            "value",
+            "NEXT QUESTION"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   SELECT ANSWER
+===================================================== */
+
+optionButtons.forEach(
+    (button, index) => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                if (examFinished)
+                    return;
+
+                selectedAnswers[
+                    currentQuestion
+                ] = index;
+
+                displayQuestion();
+
+            }
+        );
+
+    }
+);
+
+
+/* =====================================================
+   NEXT QUESTION
+===================================================== */
+
+document
+.querySelector("#nextButton")
+.addEventListener(
+    "click",
+    () => {
+
+        if (examFinished)
+            return;
+
+
+        if (
+            currentQuestion <
+            questions.length - 1
+        ) {
+
+            currentQuestion++;
+
+            displayQuestion();
+
+        } else {
+
+            finishExam();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   FINISH EXAM
+===================================================== */
+
+function finishExam() {
+
+    examFinished = true;
+
+
+    let correct = 0;
+    let incorrect = 0;
+    let unanswered = 0;
+
+
+    questions.forEach(
+        (question, index) => {
+
+            if (
+                selectedAnswers[index] === null
+            ) {
+
+                unanswered++;
+
+            }
+
+            else if (
+                selectedAnswers[index] ===
+                question.answer
+            ) {
+
+                correct++;
+
+            }
+
+            else {
+
+                incorrect++;
+
+            }
+
+        }
+    );
+
+
+    const score =
+        correct * 4 - incorrect;
+
+
+    /*
+       Hide options
+    */
+
+    optionButtons.forEach(
+        button => {
+            button.setAttribute(
+                "visible",
+                "false"
+            );
+        }
+    );
+
+
+    optionTexts.forEach(
+        text => {
+            text.setAttribute(
+                "visible",
+                "false"
+            );
+        }
+    );
+
+
+    document
+    .querySelector("#nextButton")
+    .setAttribute(
+        "visible",
+        "false"
+    );
+
+
+    questionNumber.setAttribute(
+        "value",
+        "EXAM COMPLETE"
+    );
+
+
+    questionText.setAttribute(
+        "value",
+
+        `RESULT
+
+Correct: ${correct}
+Incorrect: ${incorrect}
+Unanswered: ${unanswered}
+
+Score: ${score} / 8`
+    );
+
+}
+
+
+/* =====================================================
+   10 MINUTE COUNTDOWN
+===================================================== */
+
+function updateTimer() {
+
+    if (examFinished)
+        return;
+
+
+    const minutes =
+        Math.floor(
+            timeRemaining / 60
+        );
+
+
+    const seconds =
+        timeRemaining % 60;
+
+
+    timer.setAttribute(
+        "value",
+
+        `${String(minutes).padStart(2,"0")}:` +
+        `${String(seconds).padStart(2,"0")}`
+    );
+
+
+    /*
+       Automatically submit
+       when timer reaches zero
+    */
+
+    if (timeRemaining <= 0) {
+
+        finishExam();
+
+        return;
+
+    }
+
+
+    timeRemaining--;
+
+}
+
+
+setInterval(
+    updateTimer,
+    1000
+);
+
+
+/* =====================================================
+   START
+===================================================== */
+
+displayQuestion();
+
+updateTimer();
+
+</script>
+
+</body>
+</html>
